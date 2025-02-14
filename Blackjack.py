@@ -185,7 +185,3 @@ while game:
         print('Invalid input! Please enter an integer value between 1 and 4.\n')
         continue
         break
-    else: # invalid input case
-        error = True
-        print('Invalid input!\n\nPlease enter an integer value between 1 and 4.')
-        continue
