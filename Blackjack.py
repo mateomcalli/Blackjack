@@ -10,6 +10,7 @@ new_game = True
 play_game = False
 error = False
 not21 = True
+bank = 1000
 option = ''
 games = 0
 wins = 0
@@ -26,16 +27,16 @@ def gen_suit():
     return suit
 
 def logic(v): # will process rng, turn it into cards with names and values
-    if v == 1:
-        return 'A', 1 # first value will be unpacked as "card", the other as "new_val"
+    if v == 1: # if card is an ace
+        return 'A', 1, 11 # first value will be unpacked as "card", the other as "new_val", and the third "soft_val"
     elif v == 11:
-        return 'J', 10
+        return 'J', 10, 10
     elif v == 12:
-        return 'Q', 10
+        return 'Q', 10, 10
     elif v == 13:
-        return 'K', 10
+        return 'K', 10, 10
     else:
-        return str(v), v
+        return str(v), v, v
 
 while game:
     if not error:
@@ -59,11 +60,13 @@ while game:
             cards = []
             dealer_cards = []
             games += 1
+            print(f'Your bankroll is: {bank}')
+            bet = int(input(f'Place your bet: '))
             print(f'\nSTART GAME #{games}')
             time.sleep(1)
 
-            dealer = random.randint(1, 13)
-            dealer_card1, dealer_val1 = logic(dealer)
+            num = 1
+            dealer_card1, dealer_val1, dealer_card_initial_soft_val = logic(num)
             dealer_cards.append(dealer_card1)
             dealer_val += dealer_val1
             print(f'\nThe dealer has drawn the: ', end='')
@@ -72,28 +75,40 @@ while game:
             time.sleep(1)
             # End of initial dealer logic
 
-            num1 = random.randint(1, 13)
-            num2 = random.randint(1, 13)
-            card1, card_val1 = logic(num1)
-            card2, card_val2 = logic(num2)
+            num1 = 11
+            num2 = 1
+            card1, card_val1, soft_val1 = logic(num1)
+            card2, card_val2, soft_val2 = logic(num2)
             cards.append(card1)
             cards.append(card2)
-            val += (card_val1 + card_val2)
+            val += card_val1 + card_val2
+            soft_val = soft_val1 + soft_val2
+
             print(f'\nYou have drawn: ', end='')
             time.sleep(0.8)
             print(f'{card1}{gen_suit()} ', end='')
             time.sleep(0.8)
             print(f'{card2}{gen_suit()}')
             time.sleep(1)
-            print(f'Your hand is: {val}')
-            time.sleep(1)
-            # End of new game player logic
 
-            if val == 21:
-                print('BLACKJACK! You win!\n')
+            if soft_val == 21:
+                val = soft_val
+
+            print(f'Your hand is: {val}', end='')
+            time.sleep(1)
+
+            if soft_val == 21 and dealer_card_initial_soft_val != 11:
+                print('\nBLACKJACK! You win!')
                 wins += 1
                 new_game = True
                 continue
+            elif soft_val == 21 and dealer_card_initial_soft_val == 11:
+                not21 = False
+                option = '2'
+
+            if (card1 == 'A' or card2 == 'A') and soft_val < 21:
+                print(f' / {soft_val}')
+            # End of new game player logic
 
         if not new_game:
             num = random.randint(1, 13)
@@ -132,14 +147,19 @@ while game:
     elif option == '2': # dealer logic
         while dealer_val < 17:
             num = random.randint(1,13)
-            dealer_card, dealer_card_val = logic(num)
+            dealer_card, dealer_card_val, dealer_card_soft_val = logic(num)
             dealer_cards.append(dealer_card)
             dealer_val += dealer_card_val
+            dealer_soft_val = dealer_card_initial_soft_val + dealer_card_soft_val # THIS SHIT IS BROKEN, YOU NEED TO MAKE THE SOFT VALUE BEGIN AT INITIAL AND ADD THE VALUES FROM DRAWN CARDS
             time.sleep(0.3)
             if not not21: # lol
                 print()
                 not21 = True
-            print(f"The dealer has drawn the: {dealer_card}{gen_suit()}. They're now at {dealer_val}.")
+            print(f"The dealer has drawn the: {dealer_card}{gen_suit()}. They're now at: {dealer_val}", end='')
+            if (dealer_card1 or dealer_card) == 'A' and dealer_soft_val < 21:
+                print(f' / {dealer_soft_val}')
+            elif dealer_soft_val < 21:
+                dealer_val = dealer_soft_val
             time.sleep(1)
 
         if dealer_val <= 21 and dealer_val > val:
@@ -184,4 +204,3 @@ while game:
         error = True
         print('Invalid input! Please enter an integer value between 1 and 4.\n')
         continue
-        break
