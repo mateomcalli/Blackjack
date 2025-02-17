@@ -1,5 +1,5 @@
 # My updated (better) version of our class Blackjack project
-# TODO: Add logic for splitting and doubling, spacing is currently good and game is playable.
+# TODO: Add logic for splitting and doubling, fix spacing on rarer scenarios (aces, blackjack?).
 
 import random
 import time
@@ -16,8 +16,7 @@ games = 0
 wins = 0
 ties = 0
 losses = 0
-val = 0
-dealer_val = 0
+val, dealer_val, dealer_soft_val, soft_val = 0, 0, 0, 0
 dealer_cards = []
 cards = []
 
@@ -57,6 +56,7 @@ while game:
 
             val = 0
             dealer_val = 0
+
             cards = []
             dealer_cards = []
             games += 1
@@ -65,8 +65,8 @@ while game:
             print(f'\nSTART GAME #{games}')
             time.sleep(1)
 
-            num = 1
-            dealer_card1, dealer_val1, dealer_card_initial_soft_val = logic(num)
+            num = random.randint(1, 13)
+            dealer_card1, dealer_val1, dealer_soft_val = logic(num)
             dealer_cards.append(dealer_card1)
             dealer_val += dealer_val1
             print(f'\nThe dealer has drawn the: ', end='')
@@ -75,8 +75,8 @@ while game:
             time.sleep(1)
             # End of initial dealer logic
 
-            num1 = 11
-            num2 = 1
+            num1 = random.randint(1, 13)
+            num2 = random.randint(1, 13)
             card1, card_val1, soft_val1 = logic(num1)
             card2, card_val2, soft_val2 = logic(num2)
             cards.append(card1)
@@ -94,32 +94,42 @@ while game:
             if soft_val == 21:
                 val = soft_val
 
-            print(f'Your hand is: {val}', end='')
+            if 'A' not in cards:
+                print(f'Your hand is: {val}')
+            elif 'A' in cards and soft_val < 21:
+                print(f'Your hand is: {val} / {soft_val}')
+            else: print(f'Your hand is: {val}')
             time.sleep(1)
 
-            if soft_val == 21 and dealer_card_initial_soft_val != 11:
+            # If player draws blackjack
+            if soft_val == 21 and dealer_soft_val != 11:
                 print('\nBLACKJACK! You win!')
                 wins += 1
                 new_game = True
                 continue
-            elif soft_val == 21 and dealer_card_initial_soft_val == 11:
+            elif soft_val == 21 and dealer_soft_val == 11:
                 not21 = False
                 option = '2'
-
-            if (card1 == 'A' or card2 == 'A') and soft_val < 21:
-                print(f' / {soft_val}')
             # End of new game player logic
 
         if not new_game:
             num = random.randint(1, 13)
-            card, card_val = logic(num)
+            card, card_val, card_soft_val = logic(num)
             cards.append(card)
             val += card_val
+            soft_val += card_soft_val
             print(f'The dealer shows you the: ', end='')
             time.sleep(1)
             print(f'{card}{gen_suit()}')
             time.sleep(1)
-            print(f"You're now at {val}.")
+
+            if soft_val == 21:
+                val = soft_val
+
+            if 'A' in cards and soft_val < 21:
+                print(f"You're now at: {val} / {soft_val}")
+            else:
+                print(f"You're now at {val}.")
             time.sleep(1)
 
             if val > 21:
@@ -146,23 +156,23 @@ while game:
 
     elif option == '2': # dealer logic
         while dealer_val < 17:
-            num = random.randint(1,13)
+            num = random.randint(1, 13)
             dealer_card, dealer_card_val, dealer_card_soft_val = logic(num)
             dealer_cards.append(dealer_card)
             dealer_val += dealer_card_val
-            dealer_soft_val = dealer_card_initial_soft_val + dealer_card_soft_val # THIS SHIT IS BROKEN, YOU NEED TO MAKE THE SOFT VALUE BEGIN AT INITIAL AND ADD THE VALUES FROM DRAWN CARDS
+            dealer_soft_val += dealer_card_soft_val
             time.sleep(0.3)
             if not not21: # lol
                 print()
                 not21 = True
-            print(f"The dealer has drawn the: {dealer_card}{gen_suit()}. They're now at: {dealer_val}", end='')
-            if (dealer_card1 or dealer_card) == 'A' and dealer_soft_val < 21:
-                print(f' / {dealer_soft_val}')
-            elif dealer_soft_val < 21:
+            if 'A' in dealer_cards and dealer_soft_val < 21:
+                print(f"The dealer has drawn the: {dealer_card}{gen_suit()}. They're now at: {dealer_val} / {dealer_soft_val}")
+            else: print(f"The dealer has drawn the: {dealer_card}{gen_suit()}. They're now at: {dealer_val}")
+            if 17 <= dealer_soft_val <= 21:
                 dealer_val = dealer_soft_val
             time.sleep(1)
 
-        if dealer_val <= 21 and dealer_val > val:
+        if val < dealer_val <= 21:
             new_game = True
             print('\nDealer wins!')
             losses += 1
