@@ -1,5 +1,6 @@
 # My updated (better) version of our class Blackjack project
 # TODO: Add logic for splitting and doubling, fix spacing on rarer scenarios (aces, blackjack?).
+# Issues: Multiple aces are not handled correctly,
 
 import random
 import time
@@ -8,14 +9,18 @@ import sys
 game = True
 new_game = True
 play_game = False
+double = False
 error = False
 not21 = True
+first_choice = True
+split_option = False
 bank = 1000
 option = ''
 games = 0
 wins = 0
 ties = 0
 losses = 0
+bet = 0
 val, dealer_val, dealer_soft_val, soft_val = 0, 0, 0, 0
 dealer_cards = []
 cards = []
@@ -38,11 +43,15 @@ def logic(v): # will process rng, turn it into cards with names and values
         return str(v), v, v
 
 while game:
+    if bank <= 0:
+        print(f'\nYou are out of money. Better luck next time!')
+        break
     if not error:
         if new_game:
             while not play_game:
                 if games > 0:
                     again = input('\nPlay again? [y/n]: ')
+                    print()
                     if again == 'y':
                         break
                     elif again == 'n':
@@ -56,12 +65,28 @@ while game:
 
             val = 0
             dealer_val = 0
-
+            double = False
+            first_choice = True
+            betting = True
             cards = []
             dealer_cards = []
             games += 1
-            print(f'Your bankroll is: {bank}')
-            bet = int(input(f'Place your bet: '))
+            while betting:
+                print(f'Your bankroll is: {bank}')
+                try:
+                    bet = int(input(f'Place your bet: '))
+                    if bet > bank:
+                        print(f"\nInvalid input. You don't have enough money!\n")
+                        continue
+                    if bet <= 0:
+                        print('\nInvalid input. Bets must be greater than zero.\n')
+                        continue
+                    if type(bet) == float:
+                        print('\nInvalid input. Bets must be whole numbers.\n')
+                    betting = False
+                except ValueError:
+                    print('\nInvalid input. Bets must be whole numbers.\n')
+                    continue
             print(f'\nSTART GAME #{games}')
             time.sleep(1)
 
@@ -106,6 +131,7 @@ while game:
                 print('\nBLACKJACK! You win!')
                 wins += 1
                 new_game = True
+                bank += (bet * 1.5)
                 continue
             elif soft_val == 21 and dealer_soft_val == 11:
                 not21 = False
@@ -135,6 +161,7 @@ while game:
             if val > 21:
                 print('You have exceeded 21. You lose.')
                 losses += 1
+                bank -= bet
                 new_game = True
                 continue
 
@@ -142,19 +169,40 @@ while game:
                 not21 = False
                 option = '2'
 
-    if not21:
+            if double:
+                option = '2'
+
+    if not21 and not double:
         if not error:
-            print('\nYour move:')
-            print('1. Hit\n2. Stand\n3. Print statistics\n4. Exit\n')
+            if first_choice:
+                print('\nYour move:')
+                print('1. Hit\n2. Stand\n3. Double\n4. Print statistics\n5. Exit\n')
+            else:
+                print('\nYour move:')
+                print('1. Hit\n2. Stand\n3. Print statistics\n4. Exit\n')
         error = False
         option = input('Choose an option: ')
         print()
 
     if option == '1': # if user wants another card run the loop back
         new_game = False
+        first_choice = False
         continue
 
-    elif option == '2': # dealer logic
+    elif option == '3' and first_choice: # doubles
+        if bet <= (bank * 0.5):
+            bet *= 2
+        else:
+            error = True
+            print("Insufficient balance to double.")
+            continue
+        double = True
+        new_game = False
+        first_choice = False
+        continue
+
+    elif option == '2': # stand logic
+        val = soft_val if soft_val <= 21 else val
         while dealer_val < 17:
             num = random.randint(1, 13)
             dealer_card, dealer_card_val, dealer_card_soft_val = logic(num)
@@ -165,27 +213,30 @@ while game:
             if not not21: # lol
                 print()
                 not21 = True
-            if 'A' in dealer_cards and dealer_soft_val < 21:
-                print(f"The dealer has drawn the: {dealer_card}{gen_suit()}. They're now at: {dealer_val} / {dealer_soft_val}")
-            else: print(f"The dealer has drawn the: {dealer_card}{gen_suit()}. They're now at: {dealer_val}")
             if 17 <= dealer_soft_val <= 21:
                 dealer_val = dealer_soft_val
+            if 'A' in dealer_cards and dealer_soft_val < 17:
+                print(f"The dealer has drawn the: {dealer_card}{gen_suit()}. They're now at: {dealer_val} / {dealer_soft_val}")
+            else: print(f"The dealer has drawn the: {dealer_card}{gen_suit()}. They're now at: {dealer_val}")
             time.sleep(1)
 
         if val < dealer_val <= 21:
             new_game = True
             print('\nDealer wins!')
             losses += 1
+            bank -= bet
             continue
         elif dealer_val <= 21 and val > dealer_val:
             new_game = True
             print("\nDealer couldn't get there. You win!")
             wins += 1
+            bank += bet
             continue
         elif dealer_val > 21:
             new_game = True
             print("\nThat's too many. You win!")
             wins += 1
+            bank += bet
             continue
         elif dealer_val == val:
             new_game = True
@@ -193,7 +244,10 @@ while game:
             ties += 1
             continue
 
-    elif option == '3': # prints stats
+    # elif option == '4' and split_option: # splits
+    #     pass
+
+    elif (option == '5' and split_option) or (option == '4' and not split_option) or (option == '3' and not (first_choice and split_option)): # prints stats
         if games > 1:
             error = True
             games -= 1
@@ -207,10 +261,12 @@ while game:
             print("Invalid input! There aren't any games to display statistics.\n")
             continue
 
-    elif option == '4':
+    elif (option == '6' and split_option) or (option == '5' and not split_option):
         break
 
     else: # invalid input case
         error = True
+        if len(cards) < 2:
+            first_choice = True
         print('Invalid input! Please enter an integer value between 1 and 4.\n')
         continue
