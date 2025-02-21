@@ -1,6 +1,5 @@
-# My updated (better) version of our class Blackjack project
-# (Supposedly) fixed issues: Multiple aces logic
-# TODO: Add logic for splitting, fix spacing on rarer scenarios (aces, blackjack?).
+# ALTERNATIVE VERSION OF MAIN BLACKJACK PROJECT (not meant to be used):
+# View github note, this version is meant as a record of my attempt, and to document my learning experience.
 
 import random
 import time
