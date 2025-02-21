@@ -1,6 +1,5 @@
 # My updated (better) version of our class Blackjack project
-# (Supposedly) fixed issues: Multiple aces logic
-# TODO: Add logic for splitting, fix spacing on rarer scenarios (aces, blackjack?).
+# TODO: Somehow make into a game window (with pygame?), remove "time.sleep()"s and make sure everything is returned correctly
 
 import random
 import time
@@ -9,13 +8,14 @@ import sys
 game = True
 new_game = True
 play_game = False
-double = False
 error = False
 not21 = True
 first_choice = True
-split_option = False
+double = False
+
 bank = 1000
 option = ''
+card1, card2 = '', ''
 games = 0
 wins = 0
 ties = 0
@@ -100,8 +100,8 @@ while game:
             time.sleep(1)
             # End of initial dealer logic
 
-            num1 = 1
-            num2 = 1
+            num1 = random.randint(1, 13)
+            num2 = random.randint(1, 13)
             card1, card_val1, soft_val1 = logic(num1)
             card2, card_val2, soft_val2 = logic(num2)
             cards.append(card1)
@@ -247,10 +247,7 @@ while game:
             ties += 1
             continue
 
-    # elif option == '4' and split_option: # splits
-    #     pass
-
-    elif (option == '3' and not first_choice and not split_option) or (option == '4' and double) or (option == '5' and split_option): # prints stats
+    elif option == '3' and not first_choice or (option == '4' and first_choice): # prints stats
         if games > 1:
             error = True
             games -= 1
@@ -258,14 +255,14 @@ while game:
             print(f'Number of Player wins: {wins}')
             print(f'Number of Dealer wins: {losses}')
             print(f'Number of pushes: {ties}')
-            print(f'Percentage of Player wins: {(wins / games) * 100: .1f}%\n')
+            print(f'Percentage of Player wins: {(wins / games) * 100:.1f}%\n')
         else:
             error = True
             print("Invalid input! There aren't any games to display statistics.\n")
             continue
 
-    elif (option == '4' and not double and not split_option) or (option == '5' and not split_option) or (option == '6' and split_option): # exits
-        print('Thank you for playing.')
+    elif option == '4' and not first_choice or (option == '5' and first_choice): # exits
+        print('Thank you for playing!')
         break
 
     else: # invalid input case
