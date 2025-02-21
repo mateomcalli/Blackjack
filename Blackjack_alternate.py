@@ -1,5 +1,5 @@
 # ALTERNATIVE VERSION OF MAIN BLACKJACK PROJECT (not meant to be used):
-# View github note, this version is meant as a record of my attempt, and to document my learning experience.
+# View github note, this version is meant as a record of my attempt, and to document my learning experience. 
 
 import random
 import time
