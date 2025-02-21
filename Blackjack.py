@@ -1,6 +1,6 @@
 # My updated (better) version of our class Blackjack project
-# TODO: Add logic for splitting and doubling, fix spacing on rarer scenarios (aces, blackjack?).
-# Issues: Multiple aces are not handled correctly,
+# (Supposedly) fixed issues: Multiple aces logic
+# TODO: Add logic for splitting, fix spacing on rarer scenarios (aces, blackjack?).
 
 import random
 import time
@@ -100,8 +100,8 @@ while game:
             time.sleep(1)
             # End of initial dealer logic
 
-            num1 = random.randint(1, 13)
-            num2 = random.randint(1, 13)
+            num1 = 1
+            num2 = 1
             card1, card_val1, soft_val1 = logic(num1)
             card2, card_val2, soft_val2 = logic(num2)
             cards.append(card1)
@@ -149,10 +149,13 @@ while game:
             print(f'{card}{gen_suit()}')
             time.sleep(1)
 
+            while soft_val > 21 and 'A' in cards:
+                soft_val -= 10
+
             if soft_val == 21:
                 val = soft_val
 
-            if 'A' in cards and soft_val < 21:
+            if 'A' in cards and (val < soft_val < 21):
                 print(f"You're now at: {val} / {soft_val}")
             else:
                 print(f"You're now at {val}.")
@@ -247,7 +250,7 @@ while game:
     # elif option == '4' and split_option: # splits
     #     pass
 
-    elif (option == '5' and split_option) or (option == '4' and not split_option) or (option == '3' and not (first_choice and split_option)): # prints stats
+    elif (option == '3' and not first_choice and not split_option) or (option == '4' and double) or (option == '5' and split_option): # prints stats
         if games > 1:
             error = True
             games -= 1
@@ -261,7 +264,8 @@ while game:
             print("Invalid input! There aren't any games to display statistics.\n")
             continue
 
-    elif (option == '6' and split_option) or (option == '5' and not split_option):
+    elif (option == '4' and not double and not split_option) or (option == '5' and not split_option) or (option == '6' and split_option): # exits
+        print('Thank you for playing.')
         break
 
     else: # invalid input case
