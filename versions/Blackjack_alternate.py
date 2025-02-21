@@ -1,7 +1,7 @@
 """
 Unfinished version where I tried to implement splitting. Realized that my code is not scalable enough to add that functionality,
 and if I were to add such a thing I would need to completely reformat my code to include function definitions and more scalable
-methods. This version is only here just in case and to document my learning experience as I worked on this project. :)
+methods. This version is only here just in case and to document my learning experience as I worked on this project. :) 
 """
 
 import random
