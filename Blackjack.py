@@ -1,7 +1,7 @@
 # My updated (better) version of our class Blackjack project
 # TODO: Somehow make into a game window (with pygame?), remove "time.sleep()"s and make sure everything is returned correctly
 # test
-# test number 2,
+# test number 3
 
 import random
 import time
